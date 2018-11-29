@@ -12,12 +12,14 @@ package chat;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -30,7 +32,7 @@ import javax.swing.JTextField;
 
 public class ChatClient {
 
-    BufferedReader in;
+    DataInputStream in;
     OutputStream dOut;
     JFrame frame = new JFrame("Chatter");
     JTextField textField = new JTextField(40);
@@ -161,8 +163,8 @@ public class ChatClient {
         String serverAddress = getServerAddress();
         Socket socket = new Socket(serverAddress, 1502);
         this.dOut = socket.getOutputStream();
-        this.in = new BufferedReader(new InputStreamReader(
-            socket.getInputStream()));
+        this.in = new DataInputStream(
+            socket.getInputStream());
         this.name = getName();
         while (true) {
             String line = in.readLine();
@@ -172,6 +174,15 @@ public class ChatClient {
             }
             else if (b[0] == zero){
                 System.out.println("Version: " + Byte.toString(b[1]));
+            }
+            else if (b[0] == tl){                
+                for(int i =1; b.length>i; i++){
+                    if (b[0] == zero){
+                        continue;
+                    }else{
+                        topicList.add(Byte.toString(b[i]));
+                    }                    
+                }
             }
         }
     }
