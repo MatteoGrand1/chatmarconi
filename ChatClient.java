@@ -12,8 +12,11 @@ package chat;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -32,13 +35,13 @@ import javax.swing.JTextField;
 
 public class ChatClient {
 
-    DataInputStream in;
+    BufferedReader in;
     OutputStream dOut;
     JFrame frame = new JFrame("Chatter");
     JTextField textField = new JTextField(40);
     JTextArea messageArea = new JTextArea(8, 40);
     String name;
-    String currentTopic;
+    String currentTopic ="";
     byte zero = 0;
     byte sub = 1;
     byte unsub = 2;
@@ -73,7 +76,9 @@ public class ChatClient {
              */
             public void actionPerformed(ActionEvent e) {
                 try {
-                    dOut.write(msgSend(currentTopic, name, textField.getText()));
+                    String sdvb= textField.getText();
+                    dOut.write(msgSend(currentTopic, name, sdvb));
+                    dOut.flush();
                 } catch (IOException ex) {
                     Logger.getLogger(ChatClient.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -97,6 +102,13 @@ public class ChatClient {
      * Prompt for and return the desired screen name.
      */
     private String getName() {
+        return JOptionPane.showInputDialog(
+            frame,
+            "Choose a screen name:",
+            "Screen name selection",
+            JOptionPane.PLAIN_MESSAGE);
+    }
+    private String getMess() {
         return JOptionPane.showInputDialog(
             frame,
             "Choose a screen name:",
@@ -129,7 +141,7 @@ public class ChatClient {
     
     
     public byte[] msgSend(String t, String u, String s) {
-        byte[] p = new byte[512];
+        byte[] p = new byte[1024];
         int i = 0;
         p[i++] = mes;
         for (byte b : t.getBytes()) {
@@ -153,6 +165,15 @@ public class ChatClient {
         c9[i++]= tlrq;
         dOut.write(c9);
     }
+    
+    public void DoS(String s) throws IOException{
+        byte[] c9 = new byte[512];
+        int i = 0;
+        c9[i++]= tlrq;
+        while(true){
+            dOut.write(c9);
+        }
+    }
 
     /**
      * Connects to the server then enters the processing loop.
@@ -163,21 +184,43 @@ public class ChatClient {
         String serverAddress = getServerAddress();
         Socket socket = new Socket(serverAddress, 1502);
         this.dOut = socket.getOutputStream();
-        this.in = new DataInputStream(
-            socket.getInputStream());
+        sub("");
         this.name = getName();
+        String mess=getMess();
+        for(int i =0; i<100; i++){
+        dOut.write(msgSend(currentTopic, this.name, mess));
+        dOut.flush();
+        }
+        
         while (true) {
-            String line = in.readLine();
-            byte[] b = line.getBytes();
-            if(b[0] == mes){
-                messageArea.append(Byte.toString(b[3])+": "+ Byte.toString(b[5]));
+            this.in =new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            byte b1 = (byte) this.in.read();
+            if(b1 == mes){
+                int current;
+                ByteArrayOutputStream d = new ByteArrayOutputStream();
+                while((current = this.in.read())!=0){
+                    d.write(current);
+                }
+                new String(d.toByteArray());
+                while((current = this.in.read())!=0){
+                    d.write(current);
+                }
+                new String(d.toByteArray());
+                while((current = this.in.read())!=0){
+                    d.write(current);
+                }
+                new String(d.toByteArray());
+                messageArea.append(new String(d.toByteArray()));
+                messageArea.append("\n");
+                this.in.read();
+                
             }
-            else if (b[0] == zero){
-                System.out.println("Version: " + Byte.toString(b[1]));
+            else if (b1 == zero){
+                System.out.println("Version: " + Byte.toString((byte)this.in.read()));
             }
-            else if (b[0] == tl){                
-                for(int i =1; b.length>i; i++){
-                    if (b[0] == zero){
+            else if (b1 == tl){                
+                for(int i =1; b1.length>i; i++){
+                    if (b1 == zero){
                         continue;
                     }else{
                         topicList.add(Byte.toString(b[i]));
@@ -197,6 +240,7 @@ public class ChatClient {
         client.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         client.frame.setVisible(true);
         client.run();
+        
     }
     
 
