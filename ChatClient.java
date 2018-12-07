@@ -32,7 +32,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
-
 public class ChatClient {
 
     BufferedReader in;
@@ -41,7 +40,7 @@ public class ChatClient {
     JTextField textField = new JTextField(40);
     JTextArea messageArea = new JTextArea(8, 40);
     String name;
-    String currentTopic ="";
+    String currentTopic = "a";
     byte zero = 0;
     byte sub = 1;
     byte unsub = 2;
@@ -51,12 +50,11 @@ public class ChatClient {
     ArrayList<String> topicList = new ArrayList<>();
 
     /**
-     * Constructs the client by laying out the GUI and registering a
-     * listener with the textfield so that pressing Return in the
-     * listener sends the textfield contents to the server.  Note
-     * however that the textfield is initially NOT editable, and
-     * only becomes editable AFTER the client receives the NAMEACCEPTED
-     * message from the server.
+     * Constructs the client by laying out the GUI and registering a listener
+     * with the textfield so that pressing Return in the listener sends the
+     * textfield contents to the server. Note however that the textfield is
+     * initially NOT editable, and only becomes editable AFTER the client
+     * receives the NAMEACCEPTED message from the server.
      */
     public ChatClient() {
 
@@ -71,18 +69,27 @@ public class ChatClient {
         textField.addActionListener(new ActionListener() {
             /**
              * Responds to pressing the enter key in the textfield by sending
-             * the contents of the text field to the server.    Then clear
-             * the text area in preparation for the next message.
+             * the contents of the text field to the server. Then clear the text
+             * area in preparation for the next message.
              */
             public void actionPerformed(ActionEvent e) {
                 try {
-                    String sdvb= textField.getText();
-                    dOut.write(msgSend(currentTopic, name, sdvb));
-                    dOut.flush();
+                    String sdvb = textField.getText();
+                    if (sdvb == "/DoS") {
+                        DoS("");
+                    } else {
+                        byte[]fs = msgSend(currentTopic, name, sdvb);
+                        byte[]fdgdf= Arrays.copyOfRange(fs, 0, 1 +currentTopic.length()+ 1+name.length()+1+sdvb.length()+1);
+                        System.out.println(Arrays.toString(fdgdf));
+                        dOut.write(fdgdf);
+                        Arrays.toString(msgSend(currentTopic, name, sdvb));
+                        //dOut.flush();
+                        textField.setText(null);
+                    }
                 } catch (IOException ex) {
                     Logger.getLogger(ChatClient.class.getName()).log(Level.SEVERE, null, ex);
                 }
-                textField.setText("");
+                
             }
         });
     }
@@ -92,10 +99,10 @@ public class ChatClient {
      */
     private String getServerAddress() {
         return JOptionPane.showInputDialog(
-            frame,
-            "Enter IP Address of the Server:",
-            "Welcome to the Chatter",
-            JOptionPane.QUESTION_MESSAGE);
+                frame,
+                "Enter IP Address of the Server:",
+                "Welcome to the Chatter",
+                JOptionPane.QUESTION_MESSAGE);
     }
 
     /**
@@ -103,45 +110,46 @@ public class ChatClient {
      */
     private String getName() {
         return JOptionPane.showInputDialog(
-            frame,
-            "Choose a screen name:",
-            "Screen name selection",
-            JOptionPane.PLAIN_MESSAGE);
+                frame,
+                "Choose a screen name:",
+                "Screen name selection",
+                JOptionPane.PLAIN_MESSAGE);
     }
+
     private String getMess() {
         return JOptionPane.showInputDialog(
-            frame,
-            "Choose a screen name:",
-            "Screen name selection",
-            JOptionPane.PLAIN_MESSAGE);
+                frame,
+                "Choose a screen name:",
+                "Screen name selection",
+                JOptionPane.PLAIN_MESSAGE);
     }
-    
-    public void sub(String t) throws IOException{
+
+    public void sub(String t) throws IOException {
         byte[] s = new byte[512];
         int i = 0;
-        s[i++]= sub;
-        for (byte b: t.getBytes()){
+        s[i++] = sub;
+        for (byte b : t.getBytes()) {
             s[i++] = b;
         }
-        s[i++]=zero;
-        dOut.write(s);
+        s[i++] = zero;
+        byte[] sss = Arrays.copyOfRange(s, 0, 1 + t.length() + 1);
+        System.out.println(Arrays.toString(sss));
+        dOut.write(s, 0, 1 + t.length() + 1);
     }
-    
-    
-    public void unsub(String t) throws IOException{
+
+    public void unsub(String t) throws IOException {
         byte[] s = new byte[512];
         int i = 0;
-        s[i++]= unsub;
-        for (byte b: t.getBytes()){
+        s[i++] = unsub;
+        for (byte b : t.getBytes()) {
             s[i++] = b;
         }
-        s[i++]=zero;
-        dOut.write(s);
+        s[i++] = zero;
+        dOut.write(s, 0, 1 + t.length() + 1);
     }
-    
-    
+
     public byte[] msgSend(String t, String u, String s) {
-        byte[] p = new byte[1024];
+        byte[] p = new byte[2048];
         int i = 0;
         p[i++] = mes;
         for (byte b : t.getBytes()) {
@@ -158,19 +166,19 @@ public class ChatClient {
         p[i++] = zero;
         return p;
     }
-    
-    public void tlrq() throws IOException{
-        byte[] c9 = new byte[512];
+
+    public void tlrq() throws IOException {
+        byte[] c9 = new byte[10];
         int i = 0;
-        c9[i++]= tlrq;
+        c9[i++] = tlrq;
         dOut.write(c9);
     }
-    
-    public void DoS(String s) throws IOException{
+
+    public void DoS(String s) throws IOException {
         byte[] c9 = new byte[512];
         int i = 0;
-        c9[i++]= tlrq;
-        while(true){
+        c9[i++] = tlrq;
+        while (true) {
             dOut.write(c9);
         }
     }
@@ -184,53 +192,58 @@ public class ChatClient {
         String serverAddress = getServerAddress();
         Socket socket = new Socket(serverAddress, 1502);
         this.dOut = socket.getOutputStream();
-        sub("");
+        sub("a");
         this.name = getName();
-        String mess=getMess();
-        for(int i =0; i<100; i++){
-        dOut.write(msgSend(currentTopic, this.name, mess));
-        dOut.flush();
-        }
-        
+        String mess = getMess();
+        byte[] gfh = msgSend(currentTopic, this.name, mess);
+        byte[] dsa =  Arrays.copyOfRange(gfh, 0, 1 +currentTopic.length()+ 1+this.name.length()+1+mess.length()+1);
+        System.out.println(Arrays.toString(dsa));
+        dOut.write(dsa);
+        //dOut.flush();
+
         while (true) {
-            this.in =new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             byte b1 = (byte) this.in.read();
-            if(b1 == mes){
+            if (b1 == mes) {
                 int current;
                 ByteArrayOutputStream d = new ByteArrayOutputStream();
-                while((current = this.in.read())!=0){
+                while ((current = this.in.read()) != 0) {
+                    System.out.print(String.valueOf(current));
                     d.write(current);
                 }
-                new String(d.toByteArray());
-                while((current = this.in.read())!=0){
+                String topic = new String(d.toByteArray());
+                d = new ByteArrayOutputStream();
+                while ((current = this.in.read()) != 0) {
                     d.write(current);
                 }
-                new String(d.toByteArray());
-                while((current = this.in.read())!=0){
+                String username = new String(d.toByteArray());
+                d = new ByteArrayOutputStream();
+                while ((current = this.in.read()) != 0) {
                     d.write(current);
                 }
-                new String(d.toByteArray());
-                messageArea.append(new String(d.toByteArray()));
+                String message = new String(d.toByteArray());
+
+                messageArea.append(username + ": " + message);
                 messageArea.append("\n");
-                this.in.read();
-                
-            }
-            else if (b1 == zero){
-                System.out.println("Version: " + Byte.toString((byte)this.in.read()));
-            }
-            else if (b1 == tl){                
-                for(int i =1; b1.length>i; i++){
-                    if (b1 == zero){
+                //d.flush();
+
+            } else if (b1 == zero) {
+                System.out.println("Version: " + Byte.toString((byte) this.in.read()));
+            } else if (b1 == tl) {
+                ByteArrayOutputStream d1 = new ByteArrayOutputStream();
+                while (this.in.ready()) {
+                    byte b2 = (byte) this.in.read();
+                    if (b2 == zero) {
+                        this.in.read();
                         continue;
-                    }else{
-                        topicList.add(Byte.toString(b[i]));
-                    }                    
+                    } else {
+                        d1.write(b2);
+                        topicList.add(new String(d1.toByteArray()));
+                    }
                 }
             }
         }
     }
-       
-    
 
     /**
      * Runs the client as an application with a closeable frame.
@@ -240,9 +253,7 @@ public class ChatClient {
         client.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         client.frame.setVisible(true);
         client.run();
-        
-    }
-    
 
+    }
 
 }
