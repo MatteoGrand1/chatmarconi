@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.logging.Level;
@@ -34,13 +35,13 @@ import javax.swing.JTextField;
 
 public class ChatClient {
 
-    BufferedReader in;
+    InputStream in;
     OutputStream dOut;
     JFrame frame = new JFrame("Chatter");
     JTextField textField = new JTextField(40);
     JTextArea messageArea = new JTextArea(8, 40);
     String name;
-    String currentTopic = "a";
+    String currentTopic = "";
     byte zero = 0;
     byte sub = 1;
     byte unsub = 2;
@@ -48,6 +49,7 @@ public class ChatClient {
     byte tlrq = 4;
     byte tl = 5;
     ArrayList<String> topicList = new ArrayList<>();
+    ArrayList<String> subbedTopicList = new ArrayList<>();
 
     /**
      * Constructs the client by laying out the GUI and registering a listener
@@ -75,12 +77,12 @@ public class ChatClient {
             public void actionPerformed(ActionEvent e) {
                 try {
                     String sdvb = textField.getText();
-                    if (sdvb == "/DoS") {
+                    if (sdvb.equals("/DoS")) {
                         DoS("");
+                        textField.setText(null);
                     } else {
                         byte[]fs = msgSend(currentTopic, name, sdvb);
                         byte[]fdgdf= Arrays.copyOfRange(fs, 0, 1 +currentTopic.length()+ 1+name.length()+1+sdvb.length()+1);
-                        System.out.println(Arrays.toString(fdgdf));
                         dOut.write(fdgdf);
                         Arrays.toString(msgSend(currentTopic, name, sdvb));
                         //dOut.flush();
@@ -116,24 +118,15 @@ public class ChatClient {
                 JOptionPane.PLAIN_MESSAGE);
     }
 
-    private String getMess() {
-        return JOptionPane.showInputDialog(
-                frame,
-                "Choose a screen name:",
-                "Screen name selection",
-                JOptionPane.PLAIN_MESSAGE);
-    }
-
     public void sub(String t) throws IOException {
         byte[] s = new byte[512];
         int i = 0;
         s[i++] = sub;
-        for (byte b : t.getBytes()) {
+        for (byte b : t.getBytes("UTF-8")) {
             s[i++] = b;
         }
         s[i++] = zero;
-        byte[] sss = Arrays.copyOfRange(s, 0, 1 + t.length() + 1);
-        System.out.println(Arrays.toString(sss));
+        subbedTopicList.add(t);
         dOut.write(s, 0, 1 + t.length() + 1);
     }
 
@@ -141,26 +134,27 @@ public class ChatClient {
         byte[] s = new byte[512];
         int i = 0;
         s[i++] = unsub;
-        for (byte b : t.getBytes()) {
+        for (byte b : t.getBytes("UTF-8")) {
             s[i++] = b;
         }
         s[i++] = zero;
+        subbedTopicList.remove(t);
         dOut.write(s, 0, 1 + t.length() + 1);
     }
 
-    public byte[] msgSend(String t, String u, String s) {
+    public byte[] msgSend(String t, String u, String s) throws UnsupportedEncodingException {
         byte[] p = new byte[2048];
         int i = 0;
         p[i++] = mes;
-        for (byte b : t.getBytes()) {
+        for (byte b : t.getBytes("UTF-8")) {
             p[i++] = b;
         }
         p[i++] = zero;
-        for (byte b1 : u.getBytes()) {
+        for (byte b1 : u.getBytes("UTF-8")) {
             p[i++] = b1;
         }
         p[i++] = zero;
-        for (byte b2 : s.getBytes()) {
+        for (byte b2 : s.getBytes("UTF-8")) {
             p[i++] = b2;
         }
         p[i++] = zero;
@@ -168,18 +162,21 @@ public class ChatClient {
     }
 
     public void tlrq() throws IOException {
-        byte[] c9 = new byte[10];
-        int i = 0;
-        c9[i++] = tlrq;
+        byte[] c9 = new byte[1];
+        c9[0] = tlrq;
         dOut.write(c9);
     }
 
     public void DoS(String s) throws IOException {
-        byte[] c9 = new byte[512];
-        int i = 0;
-        c9[i++] = tlrq;
         while (true) {
-            dOut.write(c9);
+            sub("a");
+            unsub("a");
+            sub("b");
+            unsub("b");
+            sub("c");
+            unsub("c");
+            sub("d");
+            unsub("d");
         }
     }
 
@@ -192,23 +189,19 @@ public class ChatClient {
         String serverAddress = getServerAddress();
         Socket socket = new Socket(serverAddress, 1502);
         this.dOut = socket.getOutputStream();
-        sub("a");
+        topicList.add("");
+        sub("");
         this.name = getName();
-        String mess = getMess();
-        byte[] gfh = msgSend(currentTopic, this.name, mess);
-        byte[] dsa =  Arrays.copyOfRange(gfh, 0, 1 +currentTopic.length()+ 1+this.name.length()+1+mess.length()+1);
-        System.out.println(Arrays.toString(dsa));
-        dOut.write(dsa);
+        tlrq();
         //dOut.flush();
 
         while (true) {
-            this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            this.in = socket.getInputStream();
             byte b1 = (byte) this.in.read();
             if (b1 == mes) {
                 int current;
                 ByteArrayOutputStream d = new ByteArrayOutputStream();
                 while ((current = this.in.read()) != 0) {
-                    System.out.print(String.valueOf(current));
                     d.write(current);
                 }
                 String topic = new String(d.toByteArray());
@@ -230,15 +223,16 @@ public class ChatClient {
             } else if (b1 == zero) {
                 System.out.println("Version: " + Byte.toString((byte) this.in.read()));
             } else if (b1 == tl) {
-                ByteArrayOutputStream d1 = new ByteArrayOutputStream();
-                while (this.in.ready()) {
+                while (this.in.available() > 0) {
+                    ByteArrayOutputStream d1 = new ByteArrayOutputStream();
                     byte b2 = (byte) this.in.read();
                     if (b2 == zero) {
-                        this.in.read();
                         continue;
-                    } else {
+                    } else if (b2 != zero && b2 != tlrq){
                         d1.write(b2);
                         topicList.add(new String(d1.toByteArray()));
+                    } else if(b2==tlrq){
+                        break;
                     }
                 }
             }
