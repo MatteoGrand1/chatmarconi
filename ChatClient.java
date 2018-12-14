@@ -39,7 +39,7 @@ public class ChatClient {
     OutputStream dOut;
     JFrame frame = new JFrame("Chatter");
     JTextField textField = new JTextField(40);
-    JTextArea messageArea = new JTextArea(8, 40);
+    JTextArea messageArea = new JTextArea(40, 40);
     String name;
     String currentTopic = "";
     byte zero = 0;
@@ -77,10 +77,25 @@ public class ChatClient {
             public void actionPerformed(ActionEvent e) {
                 try {
                     String sdvb = textField.getText();
+                    char[] gjg = textField.getText().toCharArray();
                     if (sdvb.equals("/DoS")) {
                         DoS("");
-                        textField.setText(null);
-                    } else {
+                        
+                    } else if (gjg[0]=="/".charAt(0)&&gjg[1]=="t".charAt(0)&&gjg[2]=="o".charAt(0)&&gjg[3]=="p".charAt(0)&&gjg[4]=="i".charAt(0)&&gjg[5]=="c".charAt(0)){
+                        String[] a= sdvb.split(" ");
+                        if(!subbedTopicList.contains(a[1])){
+                            tlrq();
+                            sub(a[1]);
+                            currentTopic=a[1];
+                            textField.setText(null);
+                            messageArea.setText(null);
+                        }
+                        else{
+                            currentTopic=a[1];
+                            textField.setText(null);
+                            messageArea.setText(null);
+                        }
+                    }else {
                         byte[]fs = msgSend(currentTopic, name, sdvb);
                         byte[]fdgdf= Arrays.copyOfRange(fs, 0, 1 +currentTopic.length()+ 1+name.length()+1+sdvb.length()+1);
                         dOut.write(fdgdf);
@@ -146,6 +161,9 @@ public class ChatClient {
         byte[] p = new byte[2048];
         int i = 0;
         p[i++] = mes;
+        t= t.replaceAll("[^\\p{ASCII}]", "X");
+        u= u.replaceAll("[^\\p{ASCII}]", "X");
+        s= s.replaceAll("[^\\p{ASCII}]", "X");
         for (byte b : t.getBytes("UTF-8")) {
             p[i++] = b;
         }
