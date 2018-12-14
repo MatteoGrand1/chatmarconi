@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.jfoenix.controls.JFXListView?>
+<?import com.jfoenix.controls.JFXTextArea?>
+<?import com.jfoenix.controls.JFXTextField?>
+<?import javafx.scene.Cursor?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.effect.DropShadow?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+<AnchorPane id="AnchorPane" prefHeight="600.0" prefWidth="1155.0" style="-fx-background-color: #3D3D3D;" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="chatinterface.MainController">
+    <children>
+      <AnchorPane prefHeight="33.0" prefWidth="1189.0" style="-fx-background-color: #2C2C2C;" />
+      <Button layoutX="1106.0" mnemonicParsing="false" onMouseClicked="#CloseButtonAction" opacity="0.15" prefHeight="33.0" prefWidth="82.0" style="-fx-background-color: #000000;" textFill="WHITE">
+         <font>
+            <Font name="DejaVu Sans ExtraLight" size="18.0" />
+         </font>
+         <effect>
+            <DropShadow />
+         </effect>
+      </Button>
+      <Text fill="#ffffffc9" layoutX="1106.0" layoutY="23.0" onMouseClicked="#CloseButtonAction" strokeType="OUTSIDE" strokeWidth="0.0" text="      X" wrappingWidth="82.0000082552433">
+         <font>
+            <Font name="Calibri Light" size="26.0" />
+         </font>
+         <cursor>
+            <Cursor fx:constant="HAND" />
+         </cursor>
+      </Text>
+      <AnchorPane layoutX="175.0" layoutY="31.0" prefHeight="568.0" prefWidth="839.0">
+         <children>
+            <Text fill="#ffffffc9" layoutX="543.0" layoutY="535.0" strokeType="OUTSIDE" strokeWidth="0.0" text=" &gt;" wrappingWidth="32.000005818903446">
+               <font>
+                  <Font name="Calibri Light" size="31.0" />
+               </font>
+               <cursor>
+                  <Cursor fx:constant="HAND" />
+               </cursor>
+            </Text>
+            <JFXTextField focusColor="WHITE" layoutX="168.0" layoutY="513.0" prefHeight="29.0" prefWidth="353.0" promptText="Type something!" unFocusColor="WHITE">
+               <font>
+                  <Font size="13.0" />
+               </font>
+            </JFXTextField>
+            <JFXTextArea fx:id="ChatArea" prefHeight="483.0" prefWidth="839.0" />
+         </children></AnchorPane>
+      <JFXListView id="topicSubbed" fx:id="topicSubbed" layoutY="33.0" opacity="0.9" prefHeight="568.0" prefWidth="175.0" style="-fx-background-color: #2C2C2C;" />
+      <JFXListView layoutX="1014.0" layoutY="33.0" opacity="0.9" prefHeight="483.0" prefWidth="175.0" style="-fx-background-color: #2C2C2C;" />
+      <Button layoutX="1106.0" layoutY="515.0" mnemonicParsing="false" prefHeight="84.0" prefWidth="82.0" style="-fx-background-color: #2C2C2C;" text="Create Topic" textFill="WHITE" />
+      <Button layoutX="1014.0" layoutY="515.0" mnemonicParsing="false" prefHeight="84.0" prefWidth="94.0" style="-fx-background-color: #2C2C2C;" text="Join Topic" textFill="WHITE" />
+    </children>
+</AnchorPane>

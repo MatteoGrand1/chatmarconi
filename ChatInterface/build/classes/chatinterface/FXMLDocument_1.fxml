@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.jfoenix.controls.JFXListView?>
+<?import com.jfoenix.controls.JFXTextField?>
+<?import javafx.scene.Cursor?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.effect.DropShadow?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+<AnchorPane id="AnchorPane" onKeyPressed="#LoginKeyAction" prefHeight="600.0" prefWidth="1155.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="chatinterface.FXMLDocumentController">
+    <children>
+      <ImageView fitHeight="600.0" fitWidth="1189.0" opacity="0.2" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../../../ezgif.com-crop.gif" />
+         </image>
+      </ImageView>
+      <AnchorPane opacity="0.7" prefHeight="33.0" prefWidth="1189.0" style="-fx-background-color: #000000;" />
+      <Button layoutX="1106.0" mnemonicParsing="false" onMouseClicked="#CloseButtonAction" opacity="0.15" prefHeight="33.0" prefWidth="82.0" style="-fx-background-color: #000000;" textFill="WHITE">
+         <font>
+            <Font name="DejaVu Sans ExtraLight" size="18.0" />
+         </font>
+         <effect>
+            <DropShadow />
+         </effect>
+      </Button>
+      <Text fill="#ffffffc9" layoutX="1106.0" layoutY="23.0" onMouseClicked="#CloseButtonAction" strokeType="OUTSIDE" strokeWidth="0.0" text="      X" wrappingWidth="82.0000082552433">
+         <font>
+            <Font name="Calibri Light" size="26.0" />
+         </font>
+         <cursor>
+            <Cursor fx:constant="HAND" />
+         </cursor>
+      </Text>
+      <AnchorPane layoutX="175.0" layoutY="31.0" prefHeight="568.0" prefWidth="839.0">
+         <children>
+            <Text fill="#000000c9" layoutX="543.0" layoutY="535.0" strokeType="OUTSIDE" strokeWidth="0.0" text=" &gt;" wrappingWidth="32.000005818903446">
+               <font>
+                  <Font name="Calibri Light" size="31.0" />
+               </font>
+               <cursor>
+                  <Cursor fx:constant="HAND" />
+               </cursor>
+            </Text>
+            <JFXTextField focusColor="BLACK" layoutX="168.0" layoutY="513.0" prefHeight="29.0" prefWidth="353.0" promptText="Type something!" unFocusColor="BLACK">
+               <font>
+                  <Font size="13.0" />
+               </font>
+            </JFXTextField>
+         </children></AnchorPane>
+      <Button layoutY="515.0" mnemonicParsing="false" opacity="0.62" prefHeight="84.0" prefWidth="175.0" style="-fx-background-color: #000000;" text="Add Topic" textFill="WHITE" />
+      <JFXListView fx:id="topicSubbed" layoutY="33.0" prefHeight="483.0" prefWidth="175.0" />
+      <JFXListView layoutX="1014.0" layoutY="33.0" prefHeight="483.0" prefWidth="175.0" />
+    </children>
+</AnchorPane>
