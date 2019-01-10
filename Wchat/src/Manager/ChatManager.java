@@ -6,9 +6,10 @@ import ObjectContainer.ChatContainerObject;
 import models.TopicchatEntity;
 import models.UserchatEntity;
 
+
 public class ChatManager {
 
-    private UserChatDataAccess userChatDataAccess;
+    private UserChatDataAccess userChatDataAccess ;
 
     private TopicChatDataAccess topicChatDataAccess;
 
