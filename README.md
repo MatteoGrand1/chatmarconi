@@ -1,3 +1,2 @@
 # chatmarconi
-chat
-non funge
+chat funge solo senza caratteri non ASCII
