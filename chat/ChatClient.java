@@ -151,6 +151,7 @@ public class ChatClient extends JFrame {
                     byte[]fs = msgSend(currentTopic, name, text);
                     byte[]fdgdf= Arrays.copyOfRange(fs, 0, 1 +currentTopic.length()+ 1+name.length()+1+text.length()+1);
                     dOut.write(fdgdf);
+                    tlrq();
                     
                     //Arrays.toString(msgSend(currentTopic, name, text));
                     //dOut.flush();
@@ -325,10 +326,10 @@ public class ChatClient extends JFrame {
                     ByteArrayOutputStream d1 = new ByteArrayOutputStream();
                     byte b2 = (byte) this.in.read();
                     if (b2 == zero) {
+                        topicList.add(new String(d1.toByteArray()));
                         continue;
                     } else if (b2 != zero && b2 != tlrq){
                         d1.write(b2);
-                        topicList.add(new String(d1.toByteArray()));
                     } else if(b2==tlrq){
                         break;
                     }
