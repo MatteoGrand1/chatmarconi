@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package chat;
+package FinalChat;
 
 /**
  *
@@ -31,16 +31,8 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JButton;
+import javax.swing.*;
 
-import javax.swing.JFrame;
-import javax.swing.JList;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.WindowConstants;
 import javax.swing.border.LineBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -52,6 +44,7 @@ public class ChatClient extends JFrame {
     JTextField jTextField = new JTextField();
     JTextArea textArea = new JTextArea();
     private JTextField viewName;
+    DefaultListModel<String> topicsModel;
     String name;
     String currentTopic = "";
     byte zero = 0;
@@ -62,8 +55,9 @@ public class ChatClient extends JFrame {
     byte tl = 5;
     ArrayList<String> topicList;
     ArrayList<String> subbedTopicList = new ArrayList<>();
-
+    JList topicJlist;
     static LoginChatDialog loginChat;
+    private JButton refreshTopic;
 
     /**
      * Constructs the client by laying out the GUI and registering a listener
@@ -82,15 +76,15 @@ public class ChatClient extends JFrame {
 
         JPanel userPanel = new JPanel(new GridBagLayout());
         GridBagConstraints  constraints = new GridBagConstraints();
-
+        topicsModel = new DefaultListModel<String>();
         constraints.fill = GridBagConstraints.HORIZONTAL;
 
-        viewName = new JTextField();
-        viewName.setText(name);
-        constraints.gridx = 0;
-        constraints.gridy = 0;
-        constraints.gridwidth = 1;
-        userPanel.add(viewName);
+//        viewName = new JTextField();
+//        viewName.setText(name);
+//        constraints.gridx = 0;
+//        constraints.gridy = 0;
+//        constraints.gridwidth = 1;
+//        userPanel.add(viewName);
 
         panelLeft.add(userPanel, BorderLayout.NORTH);
 
@@ -100,14 +94,21 @@ public class ChatClient extends JFrame {
 
         JButton addTopicButton = new JButton("Add Topic");
 
-        JList topicJlist = new JList(topicList.toArray());
+        topicJlist = new JList();
+        topicJlist.setModel(topicsModel);
         ListSelectionListener listSelectionListener = new ListSelectionListener() {
       public void valueChanged(ListSelectionEvent listSelectionEvent) {
            int[] sel = topicJlist.getSelectedIndices();
                     for(int i = 0; i < sel.length; i++){
                         Object selected = topicJlist.getModel().getElementAt(sel[i]);
+                        try {
+                            sub(String.valueOf(selected));
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                         currentTopic=String.valueOf(selected);
                         textArea.setText(null);
+
                     }
       }
      };
@@ -117,17 +118,30 @@ public class ChatClient extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String nameTopic = JOptionPane.showInputDialog("Create topic");
-                topicList.add(nameTopic);
-                topicJlist.setListData(topicList.toArray());
+
                 try {
                     sub(nameTopic);
                 } catch (IOException ex) {
                     Logger.getLogger(ChatClient.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 currentTopic= nameTopic;
+                topicJlist.setModel(topicsModel);
             }
         });
-        
+
+
+        refreshTopic = new JButton("Refresh");
+        refreshTopic.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    tlrq();
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+            }
+        });
+        userPanel.add(refreshTopic);
 
         JPanel buttonPanel = new JPanel();
         buttonPanel.add(addTopicButton);
@@ -151,11 +165,10 @@ public class ChatClient extends JFrame {
                     byte[]fs = msgSend(currentTopic, name, text);
                     byte[]fdgdf= Arrays.copyOfRange(fs, 0, 1 +currentTopic.length()+ 1+name.length()+1+text.length()+1);
                     dOut.write(fdgdf);
-                    tlrq();
                     
                     //Arrays.toString(msgSend(currentTopic, name, text));
                     //dOut.flush();
-                    jTextField.setText(null);
+                    jTextField.setText("");
                 } catch (UnsupportedEncodingException ex) {
                     Logger.getLogger(ChatClient.class.getName()).log(Level.SEVERE, null, ex);
                 } catch (IOException ex) {
@@ -164,7 +177,7 @@ public class ChatClient extends JFrame {
             }
         });
 
-        textPanel.add(textArea);
+        textPanel.add(new JScrollPane(textArea));
         textPanel.add(new JScrollPane(jTextField) , BorderLayout.PAGE_END);
 
 
@@ -221,8 +234,12 @@ public class ChatClient extends JFrame {
             s[i++] = b;
         }
         s[i++] = zero;
-        subbedTopicList.add(t);
+        if (!topicsModel.contains(t)) {
+            topicsModel.addElement(t);
+            topicJlist.setModel(topicsModel);
+        }
         dOut.write(s, 0, 1 + t.length() + 1);
+        tlrq();
     }
 
     public void unsub(String t) throws IOException {
@@ -233,7 +250,8 @@ public class ChatClient extends JFrame {
             s[i++] = b;
         }
         s[i++] = zero;
-        subbedTopicList.remove(t);
+        topicList.remove(t);
+        topicJlist.setListData(topicList.toArray());
         dOut.write(s, 0, 1 + t.length() + 1);
     }
 
@@ -284,7 +302,7 @@ public class ChatClient extends JFrame {
     private void run() throws IOException {
 
         // Make connection and initialize streams
-        String serverAddress = "localhost";
+        String serverAddress = "172.16.7.168";
         Socket socket = new Socket(serverAddress, 1502);
         this.dOut = socket.getOutputStream();
         topicList.add("");
@@ -322,16 +340,25 @@ public class ChatClient extends JFrame {
             } else if (b1 == zero) {
                 System.out.println("Version: " + Byte.toString((byte) this.in.read()));
             } else if (b1 == tl) {
+                ByteArrayOutputStream d1 = new ByteArrayOutputStream();
                 while (this.in.available() > 0) {
-                    ByteArrayOutputStream d1 = new ByteArrayOutputStream();
+
                     byte b2 = (byte) this.in.read();
                     if (b2 == zero) {
-                        topicList.add(new String(d1.toByteArray()));
-                        continue;
+                        System.out.println(new String(d1.toByteArray()));
+                        if (!topicsModel.contains(new String(d1.toByteArray()))) {
+                            topicsModel.addElement(new String(d1.toByteArray()));
+                            d1.reset();
+                        } else {
+                            d1.reset();
+                            continue;
+                        }
                     } else if (b2 != zero && b2 != tlrq){
                         d1.write(b2);
                     } else if(b2==tlrq){
+                        d1.close();
                         break;
+
                     }
                 }
             }
