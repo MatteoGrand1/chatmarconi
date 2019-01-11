@@ -42,6 +42,8 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.WindowConstants;
 import javax.swing.border.LineBorder;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 public class ChatClient extends JFrame {
 
@@ -60,7 +62,7 @@ public class ChatClient extends JFrame {
     byte tl = 5;
     ArrayList<String> topicList;
     ArrayList<String> subbedTopicList = new ArrayList<>();
-    
+
     static LoginChatDialog loginChat;
 
     /**
@@ -99,7 +101,18 @@ public class ChatClient extends JFrame {
         JButton addTopicButton = new JButton("Add Topic");
 
         JList topicJlist = new JList(topicList.toArray());
-
+        ListSelectionListener listSelectionListener = new ListSelectionListener() {
+      public void valueChanged(ListSelectionEvent listSelectionEvent) {
+           int[] sel = topicJlist.getSelectedIndices();
+                    for(int i = 0; i < sel.length; i++){
+                        Object selected = topicJlist.getModel().getElementAt(sel[i]);
+                        currentTopic=String.valueOf(selected);
+                        textArea.setText(null);
+                    }
+      }
+     };
+         topicJlist.addListSelectionListener(listSelectionListener);
+         
         addTopicButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -138,7 +151,8 @@ public class ChatClient extends JFrame {
                     byte[]fs = msgSend(currentTopic, name, text);
                     byte[]fdgdf= Arrays.copyOfRange(fs, 0, 1 +currentTopic.length()+ 1+name.length()+1+text.length()+1);
                     dOut.write(fdgdf);
-                    Arrays.toString(msgSend(currentTopic, name, text));
+                    
+                    //Arrays.toString(msgSend(currentTopic, name, text));
                     //dOut.flush();
                     jTextField.setText(null);
                 } catch (UnsupportedEncodingException ex) {
@@ -322,6 +336,7 @@ public class ChatClient extends JFrame {
             }
         }
     }
+
 
     /**
      * Runs the client as an application with a closeable frame.
