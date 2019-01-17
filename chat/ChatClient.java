@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package FinalChat;
+package chat;
 
 /**
  *
@@ -176,8 +176,8 @@ public class ChatClient extends JFrame {
                 }
             }
         });
-
-        textPanel.add(new JScrollPane(textArea));
+        JScrollPane jsp= new JScrollPane(textArea);
+        textPanel.add(jsp);
         textPanel.add(new JScrollPane(jTextField) , BorderLayout.PAGE_END);
 
 
@@ -302,7 +302,7 @@ public class ChatClient extends JFrame {
     private void run() throws IOException {
 
         // Make connection and initialize streams
-        String serverAddress = "172.16.7.168";
+        String serverAddress = "172.16.7.162";
         Socket socket = new Socket(serverAddress, 1502);
         this.dOut = socket.getOutputStream();
         topicList.add("");
@@ -345,9 +345,9 @@ public class ChatClient extends JFrame {
 
                     byte b2 = (byte) this.in.read();
                     if (b2 == zero) {
-                        System.out.println(new String(d1.toByteArray()));
                         if (!topicsModel.contains(new String(d1.toByteArray()))) {
                             topicsModel.addElement(new String(d1.toByteArray()));
+                            topicJlist.setModel(topicsModel);
                             d1.reset();
                         } else {
                             d1.reset();
